@@ -12,4 +12,4 @@ class Config():
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     
     # Clave secreta para sesiones (crear una única para producción)
-    SECRET_KEY = os.environ.get('SECRET_KEY') or 'mi-clave-secreta'
+    SECRET_KEY = os.environ.

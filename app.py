@@ -62,9 +62,10 @@ def list_tasks():
     tareas = Tarea.query.filter_by(usuario_id=session["usuario_id"]).all()
     return render_template('tasks.html', tareas=tareas)
 
-@app.route('/task')
-def view_task():
-    return render_template('task.html')
+@app.route('/task/<int:id>')
+def view_task(id):
+    tarea = Tarea.query.get_or_404(id)
+    return render_template('task.html', tarea=tarea)
 
 @app.route('/task/create', methods=['GET', 'POST'])
 def create_task():
@@ -82,5 +83,41 @@ def create_task():
             return f"Error al crear la tarea: {e}"
     return render_template('create_task.html')
 
+@app.route('/task/edit/<int:id>', methods=['GET', 'POST'])
+def edit_task(id):
+    tarea = Tarea.query.get_or_404(id)
+    if request.method == 'POST':
+        tarea.titulo = request.form['titulo']
+        tarea.descripcion = request.form['descripcion']
+        tarea.fecha_vencimiento = datetime.strptime(request.form['fecha'], '%Y-%m-%d')
+        tarea.prioridad = request.form['prioridad']
+        tarea.completada = request.form.get('completada') == 'on'
+        try:        
+            db.session.commit()
+            return redirect(url_for('list_tasks'))
+        except Exception as e:
+            return f"Error al editar la tarea: {e}"
+    return render_template('edit_task.html', tarea=tarea)
+
+@app.route('/task/delete/<int:id>')
+def delete_task(id):
+    tarea = Tarea.query.get_or_404(id)
+    try:
+        db.session.delete(tarea)
+        db.session.commit()
+    except Exception as e:
+        return f"Error al eliminar la tarea: {e}"
+    return redirect(url_for('list_tasks'))
+
+@app.route('/task/complete/<int:id>', methods=['POST'])
+def complete_task(id):
+    tarea = Tarea.query.get_or_404(id)
+    try:
+        tarea.completada = not tarea.completada
+        db.session.commit()
+    except Exception as e:
+        return f"Error al completar la tarea: {e}"
+    return redirect(url_for('list_tasks'))
+
 if __name__ == '__main__':
-    app.run(debug=True, host='127.0.0.1', p
+    app.run(debug=True, host=
